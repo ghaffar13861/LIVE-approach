@@ -1,0 +1,6 @@
+{
+  "name": "Original Live Stream Manager",
+  "description": "Professional desktop streaming manager to legally broadcast original or properly licensed videos to YouTube Live using the official YouTube Live Streaming API.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
