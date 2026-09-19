@@ -141,6 +141,16 @@
       ],
       "createdAt": "2026-09-19T17:14:14.452Z",
       "updatedAt": "2026-09-19T17:14:15.244Z"
+    },
+    {
+      "id": "pl_quick_live",
+      "name": "Quick 1-Click Stream",
+      "description": "Auto-configured for 1-click live streaming",
+      "videoIds": [
+        "vid_yt_jNQXAC9IVRw_mu8nyjhq"
+      ],
+      "createdAt": "2026-09-19T17:40:23.909Z",
+      "updatedAt": "2026-09-19T17:40:23.909Z"
     }
   ],
   "schedules": [],
@@ -334,6 +344,211 @@
       "category": "RIGHTS",
       "message": "YouTube video added to library: \"Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)\"",
       "details": "YouTube ID: dQw4w9WgXcQ | Author: Rick Astley | Playlist: None"
+    },
+    {
+      "id": "log_1789839375787_7x52p",
+      "timestamp": "5:36:15 PM",
+      "level": "INFO",
+      "category": "RIGHTS",
+      "message": "Rights confirmed for all 2 playlist videos. Starting broadcast.",
+      "details": "Playlist: Original Creator Showcase (Primary Playlist) | Test Mode: YES"
+    },
+    {
+      "id": "log_1789839375795_ishc4",
+      "timestamp": "5:36:15 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[1/2] Playing video: Creator Studio Welcome & Intro (Original Video).mp4",
+      "details": "Duration: 10s | Res: 1280x720"
+    },
+    {
+      "id": "log_1789839375795_ci4ab",
+      "timestamp": "5:36:15 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789839386277_y6qnf",
+      "timestamp": "5:36:26 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 0 (signal: none)."
+    },
+    {
+      "id": "log_1789839386278_8yhtp",
+      "timestamp": "5:36:26 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Video \"Creator Studio Welcome & Intro (Original Video).mp4\" completed successfully."
+    },
+    {
+      "id": "log_1789839386278_k3a5w",
+      "timestamp": "5:36:26 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[2/2] Playing video: Commercial Ambient Synth - Licensed Track.mp4",
+      "details": "Duration: 15s | Res: 1280x720"
+    },
+    {
+      "id": "log_1789839386279_i3vx4",
+      "timestamp": "5:36:26 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789839401570_dnui8",
+      "timestamp": "5:36:41 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 0 (signal: none)."
+    },
+    {
+      "id": "log_1789839401570_h3ei2",
+      "timestamp": "5:36:41 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Video \"Commercial Ambient Synth - Licensed Track.mp4\" completed successfully."
+    },
+    {
+      "id": "log_1789839401571_gwwkj",
+      "timestamp": "5:36:41 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Playlist completed. Start a new playlist or manually restart.",
+      "details": "Strict anti-looping policy enforced. No artificial loop created."
+    },
+    {
+      "id": "log_1789839416612_dl9sg",
+      "timestamp": "5:36:56 PM",
+      "level": "INFO",
+      "category": "RIGHTS",
+      "message": "Rights confirmed for all 2 playlist videos. Starting broadcast.",
+      "details": "Playlist: Original Creator Showcase (Primary Playlist) | Test Mode: YES"
+    },
+    {
+      "id": "log_1789839416613_ggwzy",
+      "timestamp": "5:36:56 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[1/2] Playing video: Creator Studio Welcome & Intro (Original Video).mp4",
+      "details": "Duration: 10s | Res: 1280x720"
+    },
+    {
+      "id": "log_1789839416613_8cmb2",
+      "timestamp": "5:36:56 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789839427093_5uhly",
+      "timestamp": "5:37:07 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 0 (signal: none)."
+    },
+    {
+      "id": "log_1789839427094_u2v9m",
+      "timestamp": "5:37:07 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Video \"Creator Studio Welcome & Intro (Original Video).mp4\" completed successfully."
+    },
+    {
+      "id": "log_1789839427095_5jx9l",
+      "timestamp": "5:37:07 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[2/2] Playing video: Commercial Ambient Synth - Licensed Track.mp4",
+      "details": "Duration: 15s | Res: 1280x720"
+    },
+    {
+      "id": "log_1789839427095_crrs6",
+      "timestamp": "5:37:07 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789839442414_txupn",
+      "timestamp": "5:37:22 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 0 (signal: none)."
+    },
+    {
+      "id": "log_1789839442414_kycuo",
+      "timestamp": "5:37:22 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Video \"Commercial Ambient Synth - Licensed Track.mp4\" completed successfully."
+    },
+    {
+      "id": "log_1789839442415_70mw6",
+      "timestamp": "5:37:22 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Playlist completed. Start a new playlist or manually restart.",
+      "details": "Strict anti-looping policy enforced. No artificial loop created."
+    },
+    {
+      "id": "log_1789839476956_19ews",
+      "timestamp": "5:37:56 PM",
+      "level": "SUCCESS",
+      "category": "YOUTUBE",
+      "message": "YouTube Live Broadcast created: \"Official Live Showcase - Original Creations\"",
+      "details": "Privacy: UNLISTED | DVR: ON | Test Mode: YES | Ingestion: RTMP"
+    },
+    {
+      "id": "log_1789839623910_fpvj6",
+      "timestamp": "5:40:23 PM",
+      "level": "INFO",
+      "category": "RIGHTS",
+      "message": "Rights confirmed for all 1 playlist videos. Starting broadcast.",
+      "details": "Playlist: Quick 1-Click Stream | Test Mode: YES"
+    },
+    {
+      "id": "log_1789839623919_8qz20",
+      "timestamp": "5:40:23 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[1/1] Playing video: Me at the zoo",
+      "details": "Duration: 60s | Res: 1920x1080"
+    },
+    {
+      "id": "log_1789839623920_crrxh",
+      "timestamp": "5:40:23 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789839624077_pngmm",
+      "timestamp": "5:40:24 PM",
+      "level": "WARN",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 1 (signal: none)."
+    },
+    {
+      "id": "log_1789839624077_npa4b",
+      "timestamp": "5:40:24 PM",
+      "level": "WARN",
+      "category": "NETWORK",
+      "message": "Network interruption detected. Reconnect attempt 1/5 in 5s."
+    },
+    {
+      "id": "log_1789839626735_wwks4",
+      "timestamp": "5:40:26 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Live stream stopped cleanly by operator."
     }
   ],
   "settings": {
@@ -364,5 +579,5 @@
     "lastConnectedAt": "2026-09-19T17:02:22.642Z",
     "authMode": "demo"
   },
-  "activeBroadcastId": null
+  "activeBroadcastId": "yt_bc_mu8o7n4r_jxxc"
 }

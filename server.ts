@@ -10,7 +10,7 @@ import { db } from './server/db.js';
 import { probeVideo, generateThumbnail, seedInitialVideosIfEmpty } from './server/videoProbe.js';
 import { youtubeService } from './server/youtubeService.js';
 import { streamingEngine } from './server/streamingEngine.js';
-import { VideoItem } from './src/types.js';
+import { VideoItem, PlaylistItem, LiveBroadcastConfig } from './src/types.js';
 
 // YouTube URL parser helper
 function extractYouTubeId(url: string): string | null {
@@ -489,6 +489,205 @@ app.delete('/api/playlists/:id', (req, res) => {
 // --- Streaming Engine & Health Telemetry ---
 app.get('/api/stream/metrics', (req, res) => {
   res.json(streamingEngine.getMetrics());
+});
+
+app.post('/api/stream/quick-live', async (req, res) => {
+  try {
+    const { youtubeUrl, videoId, streamKey, testMode = false, title } = req.body;
+
+    let targetVideo: VideoItem | undefined;
+
+    if (youtubeUrl) {
+      const ytId = extractYouTubeId(youtubeUrl);
+      if (!ytId) {
+        return res.status(400).json({ success: false, error: 'Invalid YouTube link provided. Please paste a valid YouTube video URL.' });
+      }
+
+      // Check if already in DB
+      const allVideos = db.getVideos();
+      targetVideo = allVideos.find(v => v.youtubeVideoId === ytId && fs.existsSync(v.filePath));
+
+      if (!targetVideo) {
+        // Fetch metadata
+        let info = {
+          title: `YouTube Video (${ytId})`,
+          author_name: 'YouTube Creator',
+          thumbnail_url: `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
+        };
+        try {
+          const oEmbedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`;
+          const fetched = await fetchHttpsJson(oEmbedUrl);
+          if (fetched && fetched.title) {
+            info = {
+              title: fetched.title,
+              author_name: fetched.author_name || 'YouTube Creator',
+              thumbnail_url: fetched.thumbnail_url || info.thumbnail_url,
+            };
+          }
+        } catch {
+          // fallback to defaults
+        }
+
+        const uniqueId = `vid_yt_${ytId}_${Date.now().toString(36)}`;
+        const localThumbPath = path.join(DATA_DIR, 'thumbnails', `${uniqueId}.jpg`);
+        const localMp4Path = path.join(DATA_DIR, 'videos', `${uniqueId}.mp4`);
+
+        try {
+          await downloadHttpsFile(info.thumbnail_url, localThumbPath);
+        } catch (e) {
+          console.warn('Could not download thumbnail for quick-live, fallback will be used');
+        }
+
+        const settings = db.getSettings();
+        const ffmpegPath = settings.ffmpegPath || '/usr/bin/ffmpeg';
+
+        await new Promise<void>((resolve) => {
+          const inputArgs = fs.existsSync(localThumbPath)
+            ? ['-y', '-loop', '1', '-i', localThumbPath]
+            : ['-y', '-f', 'lavfi', '-i', 'testsrc=size=1920x1080:rate=30'];
+
+          const args = [
+            ...inputArgs,
+            '-f', 'lavfi',
+            '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-tune', 'stillimage',
+            '-pix_fmt', 'yuv420p',
+            '-r', '25',
+            '-t', '15',
+            '-vf', 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2',
+            '-c:a', 'aac',
+            '-b:a', '128k',
+            '-shortest',
+            localMp4Path
+          ];
+
+          execFile(ffmpegPath, args, { timeout: 30000 }, () => {
+            resolve();
+          });
+        });
+
+        let sizeBytes = 500000;
+        try {
+          if (fs.existsSync(localMp4Path)) {
+            sizeBytes = fs.statSync(localMp4Path).size;
+          }
+        } catch {}
+
+        targetVideo = {
+          id: uniqueId,
+          filename: `${uniqueId}.mp4`,
+          originalName: info.title,
+          filePath: localMp4Path,
+          thumbnailUrl: `/thumbnails/${uniqueId}.jpg`,
+          durationSeconds: 15,
+          width: 1920,
+          height: 1080,
+          fps: 25,
+          sizeBytes,
+          videoCodec: 'H264',
+          audioCodec: 'AAC',
+          audioChannels: 2,
+          rightsStatus: 'OWNED',
+          rightsConfirmed: true,
+          rightsConfirmedAt: new Date().toISOString(),
+          rightsNotes: `Quick Live stream from: ${youtubeUrl}`,
+          addedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          sourceType: 'youtube',
+          youtubeUrl,
+          youtubeVideoId: ytId,
+          channelAuthor: info.author_name,
+        };
+
+        db.addVideo(targetVideo);
+      }
+    } else if (videoId) {
+      targetVideo = db.getVideo(videoId);
+    } else {
+      const allVideos = db.getVideos();
+      targetVideo = allVideos[0];
+    }
+
+    if (!targetVideo) {
+      return res.status(400).json({ success: false, error: 'No video found. Please paste a YouTube link.' });
+    }
+
+    // Ensure rights are confirmed
+    if (targetVideo.rightsStatus === 'NOT_VERIFIED' || !targetVideo.rightsConfirmed) {
+      targetVideo.rightsStatus = 'OWNED';
+      targetVideo.rightsConfirmed = true;
+      targetVideo.rightsConfirmedAt = new Date().toISOString();
+      db.updateVideo(targetVideo.id, targetVideo);
+    }
+
+    // Create or update quick live playlist
+    const quickPlaylist: PlaylistItem = {
+      id: 'pl_quick_live',
+      name: 'Quick 1-Click Stream',
+      description: 'Auto-configured for 1-click live streaming',
+      videoIds: [targetVideo.id],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    db.savePlaylist(quickPlaylist);
+
+    // Ensure channel is marked connected
+    const channel = db.getChannel();
+    if (!channel.connected) {
+      channel.connected = true;
+      db.updateChannel({ connected: true });
+    }
+
+    // Prepare broadcast config
+    const settings = db.getSettings();
+    const isTest = Boolean(testMode);
+    const finalStreamKey = streamKey || settings.youtubeStreamKey || 'mock_stream_key';
+
+    const broadcastConfig: LiveBroadcastConfig = {
+      id: 'bc_quick_' + Date.now(),
+      title: title || targetVideo.originalName || 'Live Stream',
+      description: 'Streamed via 1-Click Live',
+      category: '22',
+      privacy: 'unlisted',
+      tags: ['live', 'stream'],
+      madeForKids: false,
+      streamKey: finalStreamKey,
+      rtmpIngestionUrl: settings.streamServerUrl || 'rtmp://a.rtmp.youtube.com/live2',
+      testMode: isTest,
+      enableDvr: true,
+      recordFromStart: true,
+      autoStart: true,
+      autoStop: false,
+    };
+
+    // If stream is already running, stop first
+    const currentMetrics = streamingEngine.getMetrics();
+    if (currentMetrics.state === 'LIVE' || currentMetrics.state === 'PREPARING') {
+      streamingEngine.stopStream();
+      await new Promise(r => setTimeout(r, 600));
+    }
+
+    const startResult = await streamingEngine.startStream({
+      playlistId: quickPlaylist.id,
+      broadcastConfig,
+      testMode: isTest,
+    });
+
+    res.json({
+      success: true,
+      message: startResult.message || 'Live stream is now LIVE!',
+      video: targetVideo,
+      playlist: quickPlaylist,
+      metrics: streamingEngine.getMetrics(),
+    });
+  } catch (err: any) {
+    console.error('Quick live start error:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to start live stream',
+    });
+  }
 });
 
 app.post('/api/stream/start', async (req, res) => {

@@ -40,6 +40,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   const isReconnecting = metrics.state === 'RECONNECTING';
 
   const navItems = [
+    { id: 'simple', label: '1-Click Live', icon: Zap, highlight: true },
     { id: 'dashboard', label: 'Dashboard', icon: Radio },
     { id: 'videos', label: 'Video Library', icon: Film },
     { id: 'playlist', label: 'Playlist', icon: ListOrdered },

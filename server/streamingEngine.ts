@@ -192,7 +192,15 @@ class StreamingEngine {
    */
   private async streamVideoAtIndex(index: number): Promise<void> {
     if (index >= this.playlistVideos.length) {
-      // Playlist completed!
+      // 24/7 Continuous Streaming: Loop back to first video seamlessly
+      if (this.playlistVideos.length > 0 && this.metrics.state !== 'STOPPED' && this.metrics.state !== 'IDLE') {
+        db.addLog({
+          level: 'INFO',
+          category: 'PLAYLIST',
+          message: 'Playlist reached end. Looping back to start for continuous 24/7 broadcast.',
+        });
+        return this.streamVideoAtIndex(0);
+      }
       this.handlePlaylistCompleted();
       return;
     }

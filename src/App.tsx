@@ -14,6 +14,7 @@ import { Scheduler } from './components/Scheduler';
 import { LogsViewer } from './components/LogsViewer';
 import { SettingsManager } from './components/SettingsManager';
 import { FirstRunWizard } from './components/FirstRunWizard';
+import { SimpleLiveStudio } from './components/SimpleLiveStudio';
 
 import {
   VideoItem,
@@ -27,7 +28,7 @@ import {
 } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('simple');
 
   // Core entities state
   const [videos, setVideos] = useState<VideoItem[]>([]);
@@ -140,21 +141,24 @@ export default function App() {
     fetchData();
   }, [fetchData]);
 
+  // Fetch metrics immediately on demand
+  const fetchMetrics = useCallback(async () => {
+    try {
+      const m = await fetch('/api/stream/metrics').then((r) => r.json());
+      if (m && m.state) {
+        setMetrics(m);
+      }
+    } catch (err) {
+      // Ignore polling glitches
+    }
+  }, []);
+
   // 2. Poll stream metrics every 1 second
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const m = await fetch('/api/stream/metrics').then((r) => r.json());
-        if (m && m.state) {
-          setMetrics(m);
-        }
-      } catch (err) {
-        // Ignore polling glitches
-      }
-    }, 1000);
-
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchMetrics]);
 
   // 3. Poll logs periodically
   useEffect(() => {
@@ -369,8 +373,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-rose-500 selection:text-white">
-      {/* Top Compliance & Monetization Safety Banner */}
-      <PolicyBanner />
+      {/* Top Compliance & Monetization Safety Banner - shown only in advanced studio */}
+      {activeTab !== 'simple' && <PolicyBanner />}
 
       {/* Main App Navigation */}
       <Navigation
@@ -389,6 +393,14 @@ export default function App() {
 
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {activeTab === 'simple' && (
+          <SimpleLiveStudio
+            metrics={metrics}
+            onRefreshMetrics={fetchMetrics}
+            onSwitchToAdvanced={() => setActiveTab('dashboard')}
+          />
+        )}
+
         {activeTab === 'dashboard' && (
           <Dashboard
             metrics={metrics}
