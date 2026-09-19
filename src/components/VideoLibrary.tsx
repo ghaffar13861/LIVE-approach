@@ -17,24 +17,32 @@ import {
   FileCheck,
   Scale
 } from 'lucide-react';
-import { VideoItem, RightsStatus } from '../types';
+import { VideoItem, RightsStatus, PlaylistItem } from '../types';
 import { RightsConfirmationModal } from './RightsConfirmationModal';
 import { VideoPlayerModal } from './VideoPlayerModal';
+import { YouTubeLinkImporter } from './YouTubeLinkImporter';
+import { Youtube } from 'lucide-react';
 
 interface VideoLibraryProps {
   videos: VideoItem[];
+  playlists?: PlaylistItem[];
+  activePlaylistId?: string | null;
   onUploadVideo: (formData: FormData) => Promise<void>;
   onUpdateVideo: (id: string, updates: Partial<VideoItem>) => Promise<void>;
   onDeleteVideo: (id: string) => Promise<void>;
   onAddToPlaylist?: (videoId: string) => void;
+  onImportYouTubeSuccess?: (video: VideoItem, playlist?: PlaylistItem | null) => void;
 }
 
 export const VideoLibrary: React.FC<VideoLibraryProps> = ({
   videos,
+  playlists = [],
+  activePlaylistId = null,
   onUploadVideo,
   onUpdateVideo,
   onDeleteVideo,
   onAddToPlaylist,
+  onImportYouTubeSuccess,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [rightsFilter, setRightsFilter] = useState<'ALL' | RightsStatus>('ALL');
@@ -42,6 +50,7 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({
   const [editedName, setEditedName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [showYouTubeImporter, setShowYouTubeImporter] = useState(true);
 
   // Modals state
   const [verifyingVideo, setVerifyingVideo] = useState<VideoItem | null>(null);
@@ -140,6 +149,19 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            id="btn-paste-youtube-toggle"
+            onClick={() => setShowYouTubeImporter(!showYouTubeImporter)}
+            className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+              showYouTubeImporter
+                ? 'bg-rose-600/20 text-rose-300 border-rose-500/50'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+          >
+            <Youtube className="w-4 h-4 text-rose-500" />
+            <span>Paste YouTube Link</span>
+          </button>
+
           <input
             type="file"
             ref={fileInputRef}
@@ -157,6 +179,19 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Prominent YouTube Link Importer */}
+      {showYouTubeImporter && (
+        <YouTubeLinkImporter
+          playlists={playlists}
+          activePlaylistId={activePlaylistId}
+          onImportSuccess={(video, playlist) => {
+            if (onImportYouTubeSuccess) {
+              onImportYouTubeSuccess(video, playlist);
+            }
+          }}
+        />
+      )}
 
       {/* Filter and Search */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">

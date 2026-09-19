@@ -1,0 +1,368 @@
+{
+  "videos": [
+    {
+      "id": "vid_original_intro_01",
+      "filename": "original_intro_sample.mp4",
+      "originalName": "Creator Studio Welcome & Intro (Original Video).mp4",
+      "filePath": "/app/applet/data/videos/original_intro_sample.mp4",
+      "thumbnailUrl": "/thumbnails/thumb_vid_original_intro_01.jpg",
+      "durationSeconds": 10,
+      "width": 1280,
+      "height": 720,
+      "fps": 30,
+      "sizeBytes": 264100,
+      "videoCodec": "H264",
+      "audioCodec": "AAC",
+      "audioChannels": 1,
+      "rightsStatus": "OWNED",
+      "rightsConfirmed": true,
+      "rightsConfirmedAt": "2026-09-19T17:02:22.647Z",
+      "rightsNotes": "Created directly in-house by content creator. 100% original video and audio assets.",
+      "addedDate": "Sep 19, 2026"
+    },
+    {
+      "id": "vid_licensed_track_02",
+      "filename": "licensed_ambient_track.mp4",
+      "originalName": "Commercial Ambient Synth - Licensed Track.mp4",
+      "filePath": "/app/applet/data/videos/licensed_ambient_track.mp4",
+      "thumbnailUrl": "/thumbnails/thumb_vid_licensed_track_02.jpg",
+      "durationSeconds": 15,
+      "width": 1280,
+      "height": 720,
+      "fps": 30,
+      "sizeBytes": 196588,
+      "videoCodec": "H264",
+      "audioCodec": "AAC",
+      "audioChannels": 1,
+      "rightsStatus": "LICENSED",
+      "rightsConfirmed": true,
+      "rightsConfirmedAt": "2026-09-19T17:02:22.647Z",
+      "rightsNotes": "Commercial Livestream Broadcast License #CC-BY-4029. Commercial streaming authorized.",
+      "addedDate": "Sep 19, 2026"
+    },
+    {
+      "id": "vid_dev_vlog_03",
+      "filename": "episode1_dev_vlog.mp4",
+      "originalName": "Episode 1 - Creator Dev Vlog (Unverified Rights).mp4",
+      "filePath": "/app/applet/data/videos/episode1_dev_vlog.mp4",
+      "thumbnailUrl": "/thumbnails/thumb_vid_dev_vlog_03.jpg",
+      "durationSeconds": 12,
+      "width": 1280,
+      "height": 720,
+      "fps": 30,
+      "sizeBytes": 4668231,
+      "videoCodec": "H264",
+      "audioCodec": "AAC",
+      "audioChannels": 1,
+      "rightsStatus": "NOT_VERIFIED",
+      "rightsConfirmed": false,
+      "rightsNotes": "Pending rights confirmation. Must be explicitly verified before livestreaming.",
+      "addedDate": "Sep 19, 2026"
+    },
+    {
+      "id": "vid_yt_jNQXAC9IVRw_mu8nyjhq",
+      "filename": "vid_yt_jNQXAC9IVRw_mu8nyjhq.mp4",
+      "originalName": "Me at the zoo",
+      "filePath": "/app/applet/data/videos/vid_yt_jNQXAC9IVRw_mu8nyjhq.mp4",
+      "thumbnailUrl": "/thumbnails/vid_yt_jNQXAC9IVRw_mu8nyjhq.jpg",
+      "durationSeconds": 60,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "sizeBytes": 524336,
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "audioChannels": 2,
+      "rightsStatus": "OWNED",
+      "rightsConfirmed": true,
+      "rightsConfirmedAt": "2026-09-19T17:31:10.337Z",
+      "rightsNotes": "Imported via YouTube link: https://www.youtube.com/watch?v=jNQXAC9IVRw",
+      "addedDate": "Sep 19, 2026",
+      "sourceType": "youtube",
+      "youtubeUrl": "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+      "youtubeVideoId": "jNQXAC9IVRw",
+      "channelAuthor": "jawed"
+    },
+    {
+      "id": "vid_yt_dQw4w9WgXcQ_mu8nzfeh",
+      "filename": "vid_yt_dQw4w9WgXcQ_mu8nzfeh.mp4",
+      "originalName": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
+      "filePath": "/app/applet/data/videos/vid_yt_dQw4w9WgXcQ_mu8nzfeh.mp4",
+      "thumbnailUrl": "/thumbnails/vid_yt_dQw4w9WgXcQ_mu8nzfeh.jpg",
+      "durationSeconds": 15,
+      "width": 1920,
+      "height": 1080,
+      "fps": 25,
+      "sizeBytes": 944098,
+      "videoCodec": "H264",
+      "audioCodec": "AAC",
+      "audioChannels": 2,
+      "rightsStatus": "OWNED",
+      "rightsConfirmed": true,
+      "rightsConfirmedAt": "2026-09-19T17:31:37.982Z",
+      "rightsNotes": "Imported via YouTube link: https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "addedDate": "Sep 19, 2026",
+      "sourceType": "youtube",
+      "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "youtubeVideoId": "dQw4w9WgXcQ",
+      "channelAuthor": "Rick Astley"
+    }
+  ],
+  "playlists": [
+    {
+      "id": "playlist_main_original",
+      "name": "Original Creator Showcase (Primary Playlist)",
+      "description": "Sequential authorized original content stream playlist.",
+      "videoIds": [
+        "vid_original_intro_01",
+        "vid_licensed_track_02"
+      ],
+      "createdAt": "2026-09-19T17:02:25.471Z",
+      "updatedAt": "2026-09-19T17:02:25.471Z"
+    },
+    {
+      "id": "pl_mu8nd1b6",
+      "name": "Broadcast Playlist 2",
+      "description": "Original and licensed video sequence for live stream.",
+      "videoIds": [
+        "vid_original_intro_01",
+        "vid_licensed_track_02"
+      ],
+      "createdAt": "2026-09-19T17:14:08.994Z",
+      "updatedAt": "2026-09-19T17:14:09.790Z"
+    },
+    {
+      "id": "pl_mu8nd5ir",
+      "name": "Broadcast Playlist 3",
+      "description": "Original and licensed video sequence for live stream.",
+      "videoIds": [
+        "vid_original_intro_01",
+        "vid_licensed_track_02"
+      ],
+      "createdAt": "2026-09-19T17:14:14.452Z",
+      "updatedAt": "2026-09-19T17:14:15.244Z"
+    }
+  ],
+  "schedules": [],
+  "logs": [
+    {
+      "id": "log_1789837345473_r7r02",
+      "timestamp": "5:02:25 PM",
+      "level": "SUCCESS",
+      "category": "RIGHTS",
+      "message": "Verified 2 original/licensed videos initialized in safe playlist.",
+      "details": "All videos passed compliance check. NOT_VERIFIED items excluded."
+    },
+    {
+      "id": "log_1789838011425_xdjp8",
+      "timestamp": "5:13:31 PM",
+      "level": "INFO",
+      "category": "RIGHTS",
+      "message": "Rights confirmed for all 2 playlist videos. Starting broadcast.",
+      "details": "Playlist: Original Creator Showcase (Primary Playlist) | Test Mode: YES"
+    },
+    {
+      "id": "log_1789838011426_q64mg",
+      "timestamp": "5:13:31 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[1/2] Playing video: Creator Studio Welcome & Intro (Original Video).mp4",
+      "details": "Duration: 10s | Res: 1280x720"
+    },
+    {
+      "id": "log_1789838011426_lgze9",
+      "timestamp": "5:13:31 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789838021923_feepu",
+      "timestamp": "5:13:41 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 0 (signal: none)."
+    },
+    {
+      "id": "log_1789838021923_pitcw",
+      "timestamp": "5:13:41 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Video \"Creator Studio Welcome & Intro (Original Video).mp4\" completed successfully."
+    },
+    {
+      "id": "log_1789838021924_bhnsr",
+      "timestamp": "5:13:41 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[2/2] Playing video: Commercial Ambient Synth - Licensed Track.mp4",
+      "details": "Duration: 15s | Res: 1280x720"
+    },
+    {
+      "id": "log_1789838021924_ua4ba",
+      "timestamp": "5:13:41 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789838037287_tco28",
+      "timestamp": "5:13:57 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 0 (signal: none)."
+    },
+    {
+      "id": "log_1789838037288_7zzs7",
+      "timestamp": "5:13:57 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Video \"Commercial Ambient Synth - Licensed Track.mp4\" completed successfully."
+    },
+    {
+      "id": "log_1789838037288_csrhn",
+      "timestamp": "5:13:57 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Playlist completed. Start a new playlist or manually restart.",
+      "details": "Strict anti-looping policy enforced. No artificial loop created."
+    },
+    {
+      "id": "log_1789838049791_8phb3",
+      "timestamp": "5:14:09 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Playlist saved: \"Broadcast Playlist 2\" (2 videos)"
+    },
+    {
+      "id": "log_1789838055245_kp0hl",
+      "timestamp": "5:14:15 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Playlist saved: \"Broadcast Playlist 3\" (2 videos)"
+    },
+    {
+      "id": "log_1789838911239_b2li0",
+      "timestamp": "5:28:31 PM",
+      "level": "INFO",
+      "category": "RIGHTS",
+      "message": "Rights confirmed for all 2 playlist videos. Starting broadcast.",
+      "details": "Playlist: Original Creator Showcase (Primary Playlist) | Test Mode: YES"
+    },
+    {
+      "id": "log_1789838911240_7uuzn",
+      "timestamp": "5:28:31 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[1/2] Playing video: Creator Studio Welcome & Intro (Original Video).mp4",
+      "details": "Duration: 10s | Res: 1280x720"
+    },
+    {
+      "id": "log_1789838911241_ihdds",
+      "timestamp": "5:28:31 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789838921745_j52sw",
+      "timestamp": "5:28:41 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 0 (signal: none)."
+    },
+    {
+      "id": "log_1789838921745_w7ls7",
+      "timestamp": "5:28:41 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Video \"Creator Studio Welcome & Intro (Original Video).mp4\" completed successfully."
+    },
+    {
+      "id": "log_1789838921745_28d4q",
+      "timestamp": "5:28:41 PM",
+      "level": "INFO",
+      "category": "PLAYLIST",
+      "message": "[2/2] Playing video: Commercial Ambient Synth - Licensed Track.mp4",
+      "details": "Duration: 15s | Res: 1280x720"
+    },
+    {
+      "id": "log_1789838921746_l1k9n",
+      "timestamp": "5:28:41 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "Spawning FFmpeg stream process (libx264).",
+      "details": "Destination: Local Test Sink (FLV)"
+    },
+    {
+      "id": "log_1789838937046_7lv6g",
+      "timestamp": "5:28:57 PM",
+      "level": "INFO",
+      "category": "FFMPEG",
+      "message": "FFmpeg process exited with code 0 (signal: none)."
+    },
+    {
+      "id": "log_1789838937047_27ruj",
+      "timestamp": "5:28:57 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Video \"Commercial Ambient Synth - Licensed Track.mp4\" completed successfully."
+    },
+    {
+      "id": "log_1789838937047_q77l7",
+      "timestamp": "5:28:57 PM",
+      "level": "SUCCESS",
+      "category": "PLAYLIST",
+      "message": "Playlist completed. Start a new playlist or manually restart.",
+      "details": "Strict anti-looping policy enforced. No artificial loop created."
+    },
+    {
+      "id": "log_1789839070347_5dd2s",
+      "timestamp": "5:31:10 PM",
+      "level": "SUCCESS",
+      "category": "RIGHTS",
+      "message": "YouTube video added to library: \"Me at the zoo\"",
+      "details": "YouTube ID: jNQXAC9IVRw | Author: jawed | Playlist: None"
+    },
+    {
+      "id": "log_1789839097992_p1jvf",
+      "timestamp": "5:31:37 PM",
+      "level": "SUCCESS",
+      "category": "RIGHTS",
+      "message": "YouTube video added to library: \"Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)\"",
+      "details": "YouTube ID: dQw4w9WgXcQ | Author: Rick Astley | Playlist: None"
+    }
+  ],
+  "settings": {
+    "ffmpegPath": "/usr/bin/ffmpeg",
+    "ffprobePath": "/usr/bin/ffprobe",
+    "defaultResolution": "1080p",
+    "defaultFps": 30,
+    "videoBitrateKbps": 4500,
+    "audioBitrateKbps": 128,
+    "hardwareAcceleration": "none",
+    "maxReconnectAttempts": 5,
+    "logLevel": "INFO",
+    "defaultPrivacy": "unlisted",
+    "streamServerUrl": "rtmp://a.rtmp.youtube.com/live2",
+    "testModeDefault": true,
+    "testMode": true,
+    "safePassThrough": true
+  },
+  "youtubeChannel": {
+    "connected": true,
+    "channelId": "UC_ORIGINAL_CREATOR_STUDIO_982",
+    "title": "Original Content Studio",
+    "customUrl": "@OriginalContentStudio",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+    "subscriberCount": "124,500",
+    "videoCount": "84",
+    "liveStreamingEligible": true,
+    "lastConnectedAt": "2026-09-19T17:02:22.642Z",
+    "authMode": "demo"
+  },
+  "activeBroadcastId": null
+}

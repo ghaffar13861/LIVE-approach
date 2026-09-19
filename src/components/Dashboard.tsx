@@ -25,6 +25,7 @@ import {
   VideoItem 
 } from '../types';
 import { StreamHealthMonitor } from './StreamHealthMonitor';
+import { YouTubeLinkImporter } from './YouTubeLinkImporter';
 
 interface DashboardProps {
   metrics: StreamMetrics;
@@ -41,6 +42,7 @@ interface DashboardProps {
   onNavigateTab: (tab: string) => void;
   testMode: boolean;
   setTestMode: (val: boolean) => void;
+  onImportYouTubeSuccess?: (video: VideoItem, playlist?: PlaylistItem | null) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -58,6 +60,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onNavigateTab,
   testMode,
   setTestMode,
+  onImportYouTubeSuccess,
 }) => {
   const isLive = metrics.state === 'LIVE';
   const isPaused = metrics.state === 'PAUSED';
@@ -110,6 +113,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Prominent Front-and-Center YouTube Video Link Importer */}
+      <YouTubeLinkImporter
+        playlists={playlists}
+        activePlaylistId={activePlaylistId}
+        onImportSuccess={(video, playlist) => {
+          if (onImportYouTubeSuccess) {
+            onImportYouTubeSuccess(video, playlist);
+          }
+        }}
+      />
 
       {/* Main Broadcast Control Deck */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-5 shadow-xl">

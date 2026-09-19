@@ -23,6 +23,10 @@ export interface VideoItem {
   rightsConfirmedAt?: string;
   rightsNotes?: string;
   addedDate: string;
+  sourceType?: 'local' | 'youtube';
+  youtubeUrl?: string;
+  youtubeVideoId?: string;
+  channelAuthor?: string;
 }
 
 export interface PlaylistItem {

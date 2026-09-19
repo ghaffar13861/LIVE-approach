@@ -262,6 +262,23 @@ export default function App() {
     setVideos((prev) => prev.filter((v) => v.id !== id));
   };
 
+  const handleImportYouTubeVideo = (video: VideoItem, playlist?: PlaylistItem | null) => {
+    setVideos((prev) => {
+      const exists = prev.some((v) => v.id === video.id);
+      if (exists) return prev.map((v) => (v.id === video.id ? video : v));
+      return [video, ...prev];
+    });
+
+    if (playlist) {
+      setPlaylists((prev) => {
+        const exists = prev.some((p) => p.id === playlist.id);
+        if (exists) return prev.map((p) => (p.id === playlist.id ? playlist : p));
+        return [...prev, playlist];
+      });
+      setActivePlaylistId(playlist.id);
+    }
+  };
+
   // Playlist Actions
   const handleSavePlaylist = async (playlist: PlaylistItem) => {
     const res = await fetch('/api/playlists', {
@@ -391,15 +408,19 @@ export default function App() {
               const updated = { ...settings, testMode: val };
               handleSaveSettings(updated);
             }}
+            onImportYouTubeSuccess={handleImportYouTubeVideo}
           />
         )}
 
         {activeTab === 'videos' && (
           <VideoLibrary
             videos={videos}
+            playlists={playlists}
+            activePlaylistId={activePlaylistId}
             onUploadVideo={handleUploadVideo}
             onUpdateVideo={handleUpdateVideo}
             onDeleteVideo={handleDeleteVideo}
+            onImportYouTubeSuccess={handleImportYouTubeVideo}
             onAddToPlaylist={(videoId) => {
               if (activePlaylistId) {
                 const pl = playlists.find((p) => p.id === activePlaylistId);

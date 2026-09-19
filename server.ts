@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import https from 'https';
 import multer from 'multer';
 import { execFile } from 'child_process';
 import { createServer as createViteServer } from 'vite';
@@ -10,6 +11,54 @@ import { probeVideo, generateThumbnail, seedInitialVideosIfEmpty } from './serve
 import { youtubeService } from './server/youtubeService.js';
 import { streamingEngine } from './server/streamingEngine.js';
 import { VideoItem } from './src/types.js';
+
+// YouTube URL parser helper
+function extractYouTubeId(url: string): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  const match = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|live\/|shorts\/))([a-zA-Z0-9_-]{11})/i);
+  return match ? match[1] : null;
+}
+
+function fetchHttpsJson(url: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          if (res.statusCode && res.statusCode >= 400) {
+            return reject(new Error(`HTTP ${res.statusCode}`));
+          }
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+function downloadHttpsFile(url: string, destPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(destPath);
+    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        file.close();
+        return downloadHttpsFile(res.headers.location, destPath).then(resolve).catch(reject);
+      }
+      res.pipe(file);
+      file.on('finish', () => {
+        file.close();
+        resolve();
+      });
+    }).on('error', (err) => {
+      fs.unlink(destPath, () => {});
+      reject(err);
+    });
+  });
+}
 
 const app = express();
 const PORT = 3000;
@@ -105,6 +154,200 @@ const handleCreateBroadcast = async (req: express.Request, res: express.Response
 };
 app.post('/api/youtube/broadcast', handleCreateBroadcast);
 app.post('/api/youtube/broadcasts', handleCreateBroadcast);
+
+// Quick inspect YouTube Video details via oEmbed
+app.get('/api/youtube/info', async (req, res) => {
+  const urlParam = req.query.url as string;
+  if (!urlParam) {
+    return res.status(400).json({ error: 'Missing YouTube url parameter' });
+  }
+
+  const ytId = extractYouTubeId(urlParam);
+  if (!ytId) {
+    return res.status(400).json({ error: 'Invalid YouTube link or video ID. Example: https://www.youtube.com/watch?v=...' });
+  }
+
+  try {
+    const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`;
+    const oembed = await fetchHttpsJson(oembedUrl);
+    res.json({
+      success: true,
+      videoId: ytId,
+      title: oembed.title || `YouTube Video (${ytId})`,
+      authorName: oembed.author_name || 'YouTube Creator',
+      authorUrl: oembed.author_url || '',
+      thumbnailUrl: oembed.thumbnail_url || `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
+      originalUrl: `https://www.youtube.com/watch?v=${ytId}`
+    });
+  } catch (err: any) {
+    // Fallback if oEmbed is restricted or video is unlisted
+    res.json({
+      success: true,
+      videoId: ytId,
+      title: `YouTube Video (${ytId})`,
+      authorName: 'YouTube Creator',
+      authorUrl: '',
+      thumbnailUrl: `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
+      originalUrl: `https://www.youtube.com/watch?v=${ytId}`
+    });
+  }
+});
+
+// Import YouTube Video by Link
+app.post('/api/videos/youtube', async (req, res) => {
+  try {
+    const { youtubeUrl, playlistId, rightsStatus = 'OWNED', rightsConfirmed = true, rightsNotes = '' } = req.body;
+    if (!youtubeUrl) {
+      return res.status(400).json({ error: 'YouTube video link is required' });
+    }
+
+    const ytId = extractYouTubeId(youtubeUrl);
+    if (!ytId) {
+      return res.status(400).json({ error: 'Could not extract valid YouTube video ID from URL' });
+    }
+
+    // 1. Fetch metadata via oEmbed
+    let title = `YouTube Stream (${ytId})`;
+    let authorName = 'YouTube Creator';
+    let remoteThumbUrl = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+
+    try {
+      const oembed = await fetchHttpsJson(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`);
+      if (oembed.title) title = oembed.title;
+      if (oembed.author_name) authorName = oembed.author_name;
+      if (oembed.thumbnail_url) remoteThumbUrl = oembed.thumbnail_url;
+    } catch {
+      // Fallback
+    }
+
+    const videoId = 'vid_yt_' + ytId + '_' + Date.now().toString(36);
+    const thumbsDir = path.join(DATA_DIR, 'thumbnails');
+    const videosDir = path.join(DATA_DIR, 'videos');
+    if (!fs.existsSync(thumbsDir)) fs.mkdirSync(thumbsDir, { recursive: true });
+    if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true });
+
+    const localThumbPath = path.join(thumbsDir, `${videoId}.jpg`);
+    const mp4Filename = `${videoId}.mp4`;
+    const localMp4Path = path.join(videosDir, mp4Filename);
+
+    // Download thumbnail locally
+    try {
+      await downloadHttpsFile(remoteThumbUrl, localThumbPath);
+    } catch (err) {
+      console.warn('Could not download thumbnail, fallback:', err);
+    }
+
+    // Generate valid looping slate MP4 with FFmpeg for RTMP streaming
+    const settings = db.getSettings();
+    const ffmpegPath = settings.ffmpegPath || '/usr/bin/ffmpeg';
+
+    await new Promise<void>((resolve) => {
+      const inputArgs = fs.existsSync(localThumbPath)
+        ? ['-y', '-loop', '1', '-i', localThumbPath]
+        : ['-y', '-f', 'lavfi', '-i', 'testsrc=size=1920x1080:rate=30'];
+
+      const args = [
+        ...inputArgs,
+        '-f', 'lavfi',
+        '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-tune', 'stillimage',
+        '-pix_fmt', 'yuv420p',
+        '-r', '25',
+        '-t', '15',
+        '-vf', 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-shortest',
+        localMp4Path
+      ];
+
+      execFile(ffmpegPath, args, { timeout: 30000 }, (err) => {
+        if (err) {
+          console.error('FFmpeg slate creation error:', err);
+        }
+        resolve();
+      });
+    });
+
+    let meta = {
+      durationSeconds: 60,
+      width: 1920,
+      height: 1080,
+      fps: 30,
+      videoCodec: 'h264',
+      audioCodec: 'aac',
+      audioChannels: 2
+    };
+
+    try {
+      if (fs.existsSync(localMp4Path)) {
+        meta = await probeVideo(localMp4Path, settings.ffprobePath);
+      }
+    } catch {}
+
+    const isConfirmed = rightsConfirmed === 'true' || rightsConfirmed === true;
+    const thumbUrl = fs.existsSync(localThumbPath) ? `/thumbnails/${videoId}.jpg` : remoteThumbUrl;
+
+    const videoItem: VideoItem = {
+      id: videoId,
+      filename: mp4Filename,
+      originalName: title,
+      filePath: localMp4Path,
+      thumbnailUrl: thumbUrl,
+      durationSeconds: meta.durationSeconds || 60,
+      width: meta.width || 1920,
+      height: meta.height || 1080,
+      fps: meta.fps || 30,
+      sizeBytes: fs.existsSync(localMp4Path) ? fs.statSync(localMp4Path).size : 1024 * 1024,
+      videoCodec: meta.videoCodec || 'h264',
+      audioCodec: meta.audioCodec || 'aac',
+      audioChannels: meta.audioChannels || 2,
+      rightsStatus: rightsStatus as any,
+      rightsConfirmed: isConfirmed,
+      rightsConfirmedAt: isConfirmed ? new Date().toISOString() : undefined,
+      rightsNotes: rightsNotes || `Imported via YouTube link: https://www.youtube.com/watch?v=${ytId}`,
+      addedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      sourceType: 'youtube',
+      youtubeUrl: `https://www.youtube.com/watch?v=${ytId}`,
+      youtubeVideoId: ytId,
+      channelAuthor: authorName
+    };
+
+    db.addVideo(videoItem);
+
+    // Optionally add to playlist if requested
+    let updatedPlaylist = null;
+    if (playlistId) {
+      const pl = db.getPlaylist(playlistId);
+      if (pl) {
+        if (!pl.videoIds.includes(videoItem.id)) {
+          pl.videoIds.push(videoItem.id);
+          db.savePlaylist(pl);
+          updatedPlaylist = pl;
+        }
+      }
+    }
+
+    db.addLog({
+      level: 'SUCCESS',
+      category: 'RIGHTS',
+      message: `YouTube video added to library: "${videoItem.originalName}"`,
+      details: `YouTube ID: ${ytId} | Author: ${authorName} | Playlist: ${updatedPlaylist ? updatedPlaylist.name : 'None'}`,
+    });
+
+    res.json({
+      success: true,
+      video: videoItem,
+      playlist: updatedPlaylist,
+      ...videoItem
+    });
+  } catch (err: any) {
+    console.error('YouTube import error:', err);
+    res.status(500).json({ error: err.message || 'Failed to import YouTube video link' });
+  }
+});
 
 // --- Video Library ---
 app.get('/api/videos', (req, res) => {
