@@ -26,20 +26,6 @@ import {
   AppSettings,
 } from './types';
 
-async function safeFetchJson<T>(url: string, fallback: T): Promise<T> {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return fallback;
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      return fallback;
-    }
-    return await res.json();
-  } catch {
-    return fallback;
-  }
-}
-
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -100,16 +86,30 @@ export default function App() {
 
   const [showWizard, setShowWizard] = useState(false);
 
+  // Helper for safe JSON fetching with Content-Type verification
+  const safeFetchJson = async (url: string, init?: RequestInit) => {
+    const res = await fetch(url, init);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText.slice(0, 150)}`);
+    }
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new Error(`Expected JSON response from ${url} but received ${contentType}`);
+    }
+    return res.json();
+  };
+
   // 1. Fetch initial data
   const fetchData = useCallback(async () => {
     try {
       const [videosRes, playlistsRes, channelRes, settingsRes, logsRes, schedRes] = await Promise.all([
-        safeFetchJson<VideoItem[]>('/api/videos', []),
-        safeFetchJson<PlaylistItem[]>('/api/playlists', []),
-        safeFetchJson<Partial<YouTubeChannelInfo>>('/api/youtube/channel', {}),
-        safeFetchJson<Partial<AppSettings>>('/api/settings', {}),
-        safeFetchJson<ActivityLog[]>('/api/logs', []),
-        safeFetchJson<ScheduledStream[]>('/api/scheduler', []),
+        safeFetchJson('/api/videos'),
+        safeFetchJson('/api/playlists'),
+        safeFetchJson('/api/youtube/channel'),
+        safeFetchJson('/api/settings'),
+        safeFetchJson('/api/logs'),
+        safeFetchJson('/api/scheduler'),
       ]);
 
       if (Array.isArray(videosRes)) setVideos(videosRes);
@@ -122,9 +122,10 @@ export default function App() {
       if (channelRes && channelRes.channelId) {
         setChannel((prev) => ({ ...prev, ...channelRes }));
       }
-      if (settingsRes && settingsRes.ffmpegPath) {
-        setSettings((prev) => ({ ...prev, ...settingsRes }));
-        if (settingsRes.firstRunWizardCompleted === false) {
+      if (settingsRes && (settingsRes.ffmpegPath || settingsRes.settings?.ffmpegPath)) {
+        const actualSettings = settingsRes.settings || settingsRes;
+        setSettings((prev) => ({ ...prev, ...actualSettings }));
+        if (actualSettings.firstRunWizardCompleted === false) {
           setShowWizard(true);
         }
       }
@@ -143,7 +144,7 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const m = await safeFetchJson<StreamMetrics | null>('/api/stream/metrics', null);
+        const m = await fetch('/api/stream/metrics').then((r) => r.json());
         if (m && m.state) {
           setMetrics(m);
         }
@@ -159,7 +160,7 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const l = await safeFetchJson<ActivityLog[] | null>('/api/logs', null);
+        const l = await fetch('/api/logs').then((r) => r.json());
         if (Array.isArray(l)) setLogs(l);
       } catch (err) {
         // Ignore
@@ -237,10 +238,11 @@ export default function App() {
       body: formData,
     });
     if (!res.ok) {
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       throw new Error(data.error || 'Upload failed');
     }
-    const newVideo = await res.json();
+    const data = await res.json();
+    const newVideo = data.video || data;
     setVideos((prev) => [newVideo, ...prev]);
   };
 
@@ -251,7 +253,8 @@ export default function App() {
       body: JSON.stringify(updates),
     }).then((r) => r.json());
 
-    setVideos((prev) => prev.map((v) => (v.id === id ? res : v)));
+    const updatedVideo = res.video || res;
+    setVideos((prev) => prev.map((v) => (v.id === id ? updatedVideo : v)));
   };
 
   const handleDeleteVideo = async (id: string) => {
@@ -267,12 +270,15 @@ export default function App() {
       body: JSON.stringify(playlist),
     }).then((r) => r.json());
 
+    const savedPl = res.playlist || res;
     setPlaylists((prev) => {
-      const exists = prev.some((p) => p.id === res.id);
-      if (exists) return prev.map((p) => (p.id === res.id ? res : p));
-      return [...prev, res];
+      const exists = prev.some((p) => p.id === savedPl.id);
+      if (exists) return prev.map((p) => (p.id === savedPl.id ? savedPl : p));
+      return [...prev, savedPl];
     });
-    setActivePlaylistId(res.id);
+    if (savedPl && savedPl.id) {
+      setActivePlaylistId(savedPl.id);
+    }
   };
 
   const handleDeletePlaylist = async (id: string) => {
@@ -305,7 +311,8 @@ export default function App() {
       body: JSON.stringify(schedule),
     }).then((r) => r.json());
 
-    setSchedules((prev) => [...prev, res]);
+    const newSchedule = res.schedule || res;
+    setSchedules((prev) => [...prev, newSchedule]);
   };
 
   const handleDeleteSchedule = async (id: string) => {
@@ -328,7 +335,8 @@ export default function App() {
       body: JSON.stringify(newSettings),
     }).then((r) => r.json());
 
-    setSettings(res);
+    const savedSettings = res.settings || res;
+    setSettings(savedSettings);
   };
 
   const handleTestFfmpeg = async () => {

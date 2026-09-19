@@ -98,7 +98,7 @@ const handleCreateBroadcast = async (req: express.Request, res: express.Response
   try {
     const config = req.body;
     const broadcast = await youtubeService.createLiveBroadcast(config);
-    res.json({ success: true, broadcast });
+    res.json({ success: true, broadcast, ...broadcast });
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });
   }
@@ -156,7 +156,7 @@ app.post('/api/videos/upload', upload.single('video'), async (req, res) => {
       details: `Resolution: ${meta.width}x${meta.height} | Duration: ${meta.durationSeconds}s | Status: ${rightsStatus}`,
     });
 
-    res.json({ success: true, video: videoItem });
+    res.json({ success: true, video: videoItem, ...videoItem });
   } catch (err: any) {
     console.error('Video upload error:', err);
     res.status(500).json({ error: err.message || 'Failed to process video file.' });
@@ -187,9 +187,8 @@ const handleUpdateVideo = (req: express.Request, res: express.Response) => {
     details: `Rights: ${updated.rightsStatus} (Confirmed: ${updated.rightsConfirmed})`,
   });
 
-  res.json({ success: true, video: updated });
+  res.json({ success: true, video: updated, ...updated });
 };
-
 app.patch('/api/videos/:id', handleUpdateVideo);
 app.put('/api/videos/:id', handleUpdateVideo);
 
@@ -235,7 +234,7 @@ app.post('/api/playlists', (req, res) => {
     message: `Playlist saved: "${pl.name}" (${pl.videoIds.length} videos)`,
   });
 
-  res.json({ success: true, playlist: pl });
+  res.json({ success: true, playlist: pl, ...pl });
 });
 
 app.delete('/api/playlists/:id', (req, res) => {
@@ -287,7 +286,7 @@ app.post('/api/stream/emergency-stop', (req, res) => {
   res.json({ success: true, message: 'Emergency stop completed.' });
 });
 
-// --- Schedules ---
+// --- Schedules / Scheduler (supports both /api/schedules and /api/scheduler) ---
 const handleGetSchedules = (req: express.Request, res: express.Response) => {
   res.json(db.getSchedules());
 };
@@ -298,12 +297,12 @@ const handlePostSchedule = (req: express.Request, res: express.Response) => {
   const { title, description, privacy, playlistId, playlistName, scheduledDateTime, autoStart } = req.body;
   const schedule = {
     id: 'sched_' + Date.now().toString(36),
-    title,
+    title: title || 'Scheduled Live Broadcast',
     description: description || '',
     privacy: privacy || 'unlisted',
-    playlistId,
+    playlistId: playlistId || '',
     playlistName: playlistName || 'Default Playlist',
-    scheduledDateTime,
+    scheduledDateTime: scheduledDateTime || new Date().toISOString(),
     autoStart: Boolean(autoStart),
     status: 'SCHEDULED' as const,
     createdAt: new Date().toISOString(),
@@ -317,7 +316,7 @@ const handlePostSchedule = (req: express.Request, res: express.Response) => {
     details: `Time: ${schedule.scheduledDateTime} | Playlist: ${schedule.playlistName}`,
   });
 
-  res.json({ success: true, schedule });
+  res.json({ success: true, schedule, ...schedule });
 };
 app.post('/api/schedules', handlePostSchedule);
 app.post('/api/scheduler', handlePostSchedule);
@@ -354,12 +353,12 @@ app.post('/api/settings', (req, res) => {
     category: 'SYSTEM',
     message: 'Application streaming and encoding settings updated.',
   });
-  res.json({ success: true, settings: updated });
+  res.json({ success: true, settings: updated, ...updated });
 });
 
-const handleFfmpegTest = (req: express.Request, res: express.Response) => {
+const handleTestFfmpeg = (req: express.Request, res: express.Response) => {
   const settings = db.getSettings();
-  const ffmpegPath = settings.ffmpegPath || 'ffmpeg';
+  const ffmpegPath = settings.ffmpegPath || '/usr/bin/ffmpeg';
   execFile(ffmpegPath, ['-version'], { timeout: 5000 }, (err, stdout, stderr) => {
     if (err) {
       return res.json({
@@ -370,19 +369,19 @@ const handleFfmpegTest = (req: express.Request, res: express.Response) => {
       });
     }
     const firstLine = stdout.split('\n')[0] || '';
-    const match = firstLine.match(/version\s+([^\s]+)/i);
-    const version = match ? match[1] : firstLine;
+    const versionMatch = firstLine.match(/ffmpeg version ([^\s]+)/i);
+    const version = versionMatch ? versionMatch[1] : (firstLine || 'Installed');
     res.json({
       success: true,
       version,
-      encoders: ['libx264', 'aac', 'h264_nvenc', 'h264_qsv'],
+      encoders: ['libx264', 'h264_nvenc', 'aac', 'copy'],
       message: 'FFmpeg is operational and ready.',
       details: firstLine,
     });
   });
 };
-app.post('/api/test/ffmpeg', handleFfmpegTest);
-app.post('/api/settings/test-ffmpeg', handleFfmpegTest);
+app.post('/api/test/ffmpeg', handleTestFfmpeg);
+app.post('/api/settings/test-ffmpeg', handleTestFfmpeg);
 
 app.post('/api/test/youtube', (req, res) => {
   const channel = db.getChannel();
@@ -413,7 +412,7 @@ app.post('/api/test/network', (req, res) => {
   }, 200);
 });
 
-// Unmatched API routes fallback to JSON 404 to prevent Vite HTML SPA from responding with index.html
+// Guard against missing /api/* endpoints falling through to SPA HTML handler
 app.all('/api/*', (req, res) => {
   res.status(404).json({ error: `API route not found: ${req.method} ${req.path}` });
 });
